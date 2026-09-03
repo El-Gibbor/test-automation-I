@@ -18,8 +18,29 @@ jobs:
           java-version: '11'
           cache: maven
 
+      - name: Record start time
+        id: timer
+        run: echo "start=$(date +%s)" >> "$GITHUB_OUTPUT"
+
       - name: Run tests
         run: mvn -B test
+
+      - name: Summarize test run
+        if: always()
+        id: summary
+        run: |
+          elapsed=$(( $(date +%s) - ${{ steps.timer.outputs.start }} ))
+          echo "elapsed=$(printf '%dm %ds' $((elapsed / 60)) $((elapsed % 60)))" >> "$GITHUB_OUTPUT"
+          echo "time=$(date -u +'%H:%M UTC')" >> "$GITHUB_OUTPUT"
+          echo "short_sha=$(echo "${{ github.sha }}" | cut -c1-7)" >> "$GITHUB_OUTPUT"
+          if compgen -G "target/surefire-reports/*.txt" > /dev/null; then
+            line=$(cat target/surefire-reports/*.txt | grep "Tests run" | tail -1)
+            failed=$(echo "$line" | grep -oP 'Failures: \K[0-9]+')
+            errors=$(echo "$line" | grep -oP 'Errors: \K[0-9]+')
+            echo "failed_summary=$((failed + errors)) tests failed" >> "$GITHUB_OUTPUT"
+          else
+            echo "failed_summary=no test report found" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Notify Slack of build status
         if: always()
@@ -28,4 +49,37 @@ jobs:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
-            text: "Build ${{ job.status }} for ${{ github.repository }} on ${{ github.ref_name }}: ${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+            attachments:
+              - color: "${{ job.status == 'success' && '#2eb67d' || '#e01e5a' }}"
+                blocks:
+                  - type: "header"
+                    text:
+                      type: "plain_text"
+                      text: "${{ job.status == 'success' && 'Build success' || 'Build failure' }}"
+                  - type: "section"
+                    fields:
+                      - type: "mrkdwn"
+                        text: "*Repo*\n${{ github.event.repository.name }}"
+                      - type: "mrkdwn"
+                        text: "*Branch*\n${{ github.ref_name }}"
+                      - type: "mrkdwn"
+                        text: "*Trigger*\n${{ github.event_name == 'push' && format('Push by @{0}', github.actor) || format('PR by @{0}', github.actor) }}"
+                      - type: "mrkdwn"
+                        text: "*Time*\n${{ steps.summary.outputs.time }}"
+                  - type: "divider"
+                  - type: "context"
+                    elements:
+                      - type: "mrkdwn"
+                        text: "Commit ${{ steps.summary.outputs.short_sha }} · ${{ steps.summary.outputs.elapsed }} · ${{ steps.summary.outputs.failed_summary }}"
+                  - type: "actions"
+                    elements:
+                      - type: "button"
+                        text:
+                          type: "plain_text"
+                          text: "View run"
+                        url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                      - type: "button"
+                        text:
+                          type: "plain_text"
+                          text: "View commit"
+                        url: "${{ github.event.head_commit.url || github.event.pull_request.html_url }}"
