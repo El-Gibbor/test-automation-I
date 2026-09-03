@@ -34,7 +34,7 @@ public class AppTest {
         signUpPage.enterEmail("chiagoziem.eke@amalitech.com");
         signUpPage.submit();
 
-        assertEquals("Thanks for subscribing!", signUpPage.getSuccessMessage());
+        assertEquals("Deliberately wrong expected text, to verify the CI failure path", signUpPage.getSuccessMessage());
     }
 
     @AfterEach
