@@ -31,6 +31,9 @@ public class NewsletterSignUpPage {
     @FindBy(css = ".success-view__title")
     private WebElement successMessage;
 
+    @FindBy(id = "email-error")
+    private WebElement emailError;
+
     public NewsletterSignUpPage(WebDriver driver) {
         this.driver = driver;
         this.actions = new VisualActions(driver);
@@ -53,5 +56,11 @@ public class NewsletterSignUpPage {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         wait.until(ExpectedConditions.visibilityOf(successMessage));
         return successMessage.getText();
+    }
+
+    public String getEmailError() {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(driver -> !emailError.getText().trim().isEmpty());
+        return emailError.getText();
     }
 }
