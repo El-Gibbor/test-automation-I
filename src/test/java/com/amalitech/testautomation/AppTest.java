@@ -13,10 +13,6 @@ import org.openqa.selenium.chrome.ChromeOptions;
 
 import com.amalitech.testautomation.pages.NewsletterSignUpPage;
 
-/**
- * Drives the newsletter sign-up form through its page object, and verifies
- * that submitting a valid email reveals the success message.
- */
 public class AppTest {
 
     private WebDriver driver;
