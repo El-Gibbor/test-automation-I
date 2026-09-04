@@ -9,6 +9,8 @@ import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import com.amalitech.testautomation.support.VisualActions;
+
 /**
  * Represents the newsletter sign-up card, covering both its sign-up state
  * and the success state it switches to after a valid submission.
@@ -18,6 +20,7 @@ public class NewsletterSignUpPage {
     private static final String URL = "https://quality-assurance-labs.vercel.app";
 
     private final WebDriver driver;
+    private final VisualActions actions;
 
     @FindBy(id = "email")
     private WebElement emailInput;
@@ -30,6 +33,7 @@ public class NewsletterSignUpPage {
 
     public NewsletterSignUpPage(WebDriver driver) {
         this.driver = driver;
+        this.actions = new VisualActions(driver);
         PageFactory.initElements(driver, this);
     }
 
@@ -38,11 +42,11 @@ public class NewsletterSignUpPage {
     }
 
     public void enterEmail(String email) {
-        emailInput.sendKeys(email);
+        actions.type(emailInput, email, "Enter email address");
     }
 
     public void submit() {
-        submitButton.click();
+        actions.click(submitButton, "Click submit button");
     }
 
     public String getSuccessMessage() {

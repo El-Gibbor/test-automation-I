@@ -21,9 +21,16 @@ public class AppTest {
 
     @BeforeEach
     void setUp() {
+        boolean headless = Boolean.getBoolean("headless")
+                || Boolean.parseBoolean(System.getenv("CI"));
+
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless=new");
+        if (headless) {
+            options.addArguments("--headless=new");
+        }
+
         driver = new ChromeDriver(options);
+        driver.manage().window().maximize();
     }
 
     @Test
