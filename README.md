@@ -1,22 +1,20 @@
 # Basic Test Automation with Selenium WebDriver
 
-Learning lab on Selenium WebDriver along with the practices that surround it in a real test automation setup: structuring tests with JUnit 5, separating page structure from test logic with the Page Object Model, and running the whole suite through a CI pipeline on GitHub Actions.
+A learning lab on Selenium WebDriver and the practices around it in a real automation setup: structuring tests with JUnit 5, separating page structure from test logic with the Page Object Model, and running the suite through a GitHub Actions CI pipeline.
 
 ## Application under test
 
-The tests drive a hosted newsletter sign up form at https://quality-assurance-labs.vercel.app. It is a small static page with one email field and a submit button. Submitting a valid email reveals a success message. Submitting an empty field or a malformed email reveals a validation error instead, with a distinct message for each case.
+The tests drive a hosted newsletter sign-up form at https://quality-assurance-labs.vercel.app, a small static page with one email field and a submit button. A valid email reveals a success message; an empty or malformed email reveals a validation error instead, with a distinct message for each case.
 
-## What is actually tested
+## What is tested
 
-There is one test class, `AppTest`, covering three scenarios rather than only the happy path.
-
-The first scenario submits a valid email and asserts that the success message appears. The second submits the form with the email field left empty and asserts on the required field error. The third is a parameterized test covering several malformed email shapes, including an email with no domain at all and one with a domain that has no top level domain, each asserting on the invalid format error.
+One test class, `AppTest`, covers three scenarios rather than only the happy path: submitting a valid email and asserting the success message; submitting an empty field and asserting the required-field error; and a parameterized test over several malformed email shapes (including no domain and no top-level domain), each asserting the invalid-format error.
 
 ## How the tests are structured
 
-The form itself is represented by a single page object, `NewsletterSignUpPage`, under `com.amalitech.testautomation.pages`. It uses the Page Factory pattern, with `@FindBy` annotated fields for its elements, so the test class never touches a locator directly. All the waiting for the page to actually be ready, rather than assuming it is, lives inside this page object too.
+The form is represented by a single page object, `NewsletterSignUpPage` (`com.amalitech.testautomation.pages`), using the Page Factory pattern with `@FindBy` fields so the test class never touches a locator directly. All waiting for the page to be ready lives inside this page object.
 
-Alongside it sits `VisualActions`, under `com.amalitech.testautomation.support`. It wraps every click and every typed input with an explicit wait, and it can optionally highlight the element being interacted with and pause briefly between steps, which makes it possible to actually watch a run happen step by step instead of only reading a pass or fail result afterward. Every step it takes is also logged to the console with a timestamp, whether or not that visual mode is switched on.
+Alongside it, `VisualActions` (`com.amalitech.testautomation.support`) wraps every click and typed input with an explicit wait. It can optionally highlight the element in use and pause between steps, making a run watchable step by step, and it logs every step to the console with a timestamp whether or not visual mode is on.
 
 ## Running the tests
 
